@@ -1,16 +1,25 @@
 'use client';
 
 import { useState } from 'react';
-import { Trash2, GripVertical } from 'lucide-react';
+import { Trash2, GripVertical, Copy } from 'lucide-react';
 
 interface TitleBlockProps {
   id: string;
   content: string;
   onUpdate: (id: string, content: string) => void;
   onDelete: (id: string) => void;
+  onDuplicate?: (id: string) => void;
+  dragHandleProps?: any;
 }
 
-export default function TitleBlock({ id, content, onUpdate, onDelete }: TitleBlockProps) {
+export default function TitleBlock({ 
+  id, 
+  content, 
+  onUpdate, 
+  onDelete, 
+  onDuplicate,
+  dragHandleProps 
+}: TitleBlockProps) {
   const [isEditing, setIsEditing] = useState(!content);
 
   const handleSave = (value: string) => {
@@ -21,8 +30,8 @@ export default function TitleBlock({ id, content, onUpdate, onDelete }: TitleBlo
   return (
     <div className="group relative bg-dark-surface border border-dark-border rounded-lg p-4 hover:border-blue-500/50 transition-colors">
       <div className="flex items-start gap-3">
-        <div className="flex items-center gap-2 text-dark-muted">
-          <GripVertical className="w-4 h-4" />
+        <div className="flex items-center gap-2 text-dark-muted cursor-grab active:cursor-grabbing" {...dragHandleProps}>
+          <GripVertical className="w-4 h-4 hover:text-blue-400 transition-colors" />
           <span className="text-xs font-medium">TÍTULO</span>
         </div>
         
@@ -52,13 +61,24 @@ export default function TitleBlock({ id, content, onUpdate, onDelete }: TitleBlo
           )}
         </div>
 
-        <button
-          onClick={() => onDelete(id)}
-          className="opacity-0 group-hover:opacity-100 p-1 text-red-400 hover:text-red-300 transition-all"
-          title="Excluir bloco"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-all">
+          {onDuplicate && (
+            <button
+              onClick={() => onDuplicate(id)}
+              className="p-1 text-blue-400 hover:text-blue-300 transition-colors"
+              title="Duplicar bloco"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          )}
+          <button
+            onClick={() => onDelete(id)}
+            className="p-1 text-red-400 hover:text-red-300 transition-colors"
+            title="Excluir bloco"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
+        </div>
       </div>
     </div>
   );

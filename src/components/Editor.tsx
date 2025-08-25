@@ -1,34 +1,16 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Block, BlockType, Document, DocumentInfo } from '@/types/document';
+import { BlockType } from '@/types/document';
 import { DocxGenerator } from '@/lib/docx-generator';
+import { useDocumentStore } from '@/store/documentStore';
 import Toolbar from './Toolbar';
 import DocumentInfoModal from './DocumentInfoModal';
-import TitleBlock from './blocks/TitleBlock';
-import SubtitleBlock from './blocks/SubtitleBlock';
-import ParagraphBlock from './blocks/ParagraphBlock';
-import CitationBlock from './blocks/CitationBlock';
-import PageBreakBlock from './blocks/PageBreakBlock';
-import FreeFormBlock from './blocks/FreeFormBlock';
-import ReferencesBlock from './blocks/ReferencesBlock';
+import DraggableBlockList from './DraggableBlockList';
 
 export default function Editor() {
-  const [document, setDocument] = useState<Document>({
-    info: {
-      institution: '',
-      course: '',
-      author: '',
-      title: '',
-      subtitle: '',
-      city: '',
-      year: new Date().getFullYear().toString(),
-    },
-    blocks: [],
-  });
-
+  const { document, addBlock, setDocumentInfo } = useDocumentStore();
   const [showInfoModal, setShowInfoModal] = useState(false);
-  const [nextOrder, setNextOrder] = useState(1);
 
   // Mostrar modal de informações na primeira vez
   useEffect(() => {
@@ -37,41 +19,6 @@ export default function Editor() {
       setShowInfoModal(true);
     }
   }, []);
-
-  const handleAddBlock = (type: BlockType) => {
-    const newBlock: Block = {
-      id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      type,
-      content: '',
-      order: nextOrder,
-    };
-
-    setDocument(prev => ({
-      ...prev,
-      blocks: [...prev.blocks, newBlock],
-    }));
-    setNextOrder(prev => prev + 1);
-  };
-
-  const handleUpdateBlock = (id: string, content: string) => {
-    setDocument(prev => ({
-      ...prev,
-      blocks: prev.blocks.map(block =>
-        block.id === id ? { ...block, content } : block
-      ),
-    }));
-  };
-
-  const handleDeleteBlock = (id: string) => {
-    setDocument(prev => ({
-      ...prev,
-      blocks: prev.blocks.filter(block => block.id !== id),
-    }));
-  };
-
-  const handleUpdateDocumentInfo = (info: DocumentInfo) => {
-    setDocument(prev => ({ ...prev, info }));
-  };
 
   const handleExport = async () => {
     try {
@@ -83,40 +30,10 @@ export default function Editor() {
     }
   };
 
-  const renderBlock = (block: Block) => {
-    const commonProps = {
-      id: block.id,
-      content: block.content,
-      onUpdate: handleUpdateBlock,
-      onDelete: handleDeleteBlock,
-    };
-
-    switch (block.type) {
-      case 'title':
-        return <TitleBlock key={block.id} {...commonProps} />;
-      case 'subtitle':
-        return <SubtitleBlock key={block.id} {...commonProps} />;
-      case 'paragraph':
-        return <ParagraphBlock key={block.id} {...commonProps} />;
-      case 'citation':
-        return <CitationBlock key={block.id} {...commonProps} />;
-      case 'page-break':
-        return <PageBreakBlock key={block.id} id={block.id} onDelete={handleDeleteBlock} />;
-      case 'free-form':
-        return <FreeFormBlock key={block.id} {...commonProps} />;
-      case 'references':
-        return <ReferencesBlock key={block.id} {...commonProps} />;
-      default:
-        return null;
-    }
-  };
-
-  const sortedBlocks = [...document.blocks].sort((a, b) => a.order - b.order);
-
   return (
     <div className="min-h-screen bg-dark-bg">
       <Toolbar
-        onAddBlock={handleAddBlock}
+        onAddBlock={addBlock}
         onExport={handleExport}
         onOpenSettings={() => setShowInfoModal(true)}
       />
@@ -132,7 +49,7 @@ export default function Editor() {
             </p>
           </div>
 
-          {sortedBlocks.length === 0 ? (
+          {document.blocks.length === 0 ? (
             <div className="text-center py-16">
               <div className="text-6xl mb-4">📝</div>
               <h2 className="text-xl font-semibold text-dark-text mb-2">
@@ -143,9 +60,7 @@ export default function Editor() {
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {sortedBlocks.map(renderBlock)}
-            </div>
+            <DraggableBlockList />
           )}
         </div>
       </div>
@@ -153,7 +68,7 @@ export default function Editor() {
       <DocumentInfoModal
         isOpen={showInfoModal}
         onClose={() => setShowInfoModal(false)}
-        onSave={handleUpdateDocumentInfo}
+        onSave={setDocumentInfo}
         initialData={document.info}
       />
     </div>

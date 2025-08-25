@@ -1,6 +1,6 @@
 import { Document as DocxDocument, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
-import { Document, Block, DocumentInfo } from '@/types/document';
+import { Document, Block } from '@/types/document';
 
 export class DocxGenerator {
   private document: Document;
@@ -222,8 +222,8 @@ export class DocxGenerator {
       });
 
       // Conteúdo dos blocos
-      const contentParagraphs = this.document.blocks
-        .sort((a, b) => a.order - b.order)
+      const sortedBlocks = [...this.document.blocks].sort((a, b) => a.order - b.order);
+      const contentParagraphs = sortedBlocks
         .flatMap(block => this.createBlockParagraph(block));
 
       const doc = new DocxDocument({
