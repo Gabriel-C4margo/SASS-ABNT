@@ -6,6 +6,15 @@ export interface DocumentInfo {
   subtitle?: string;
   city: string;
   year: string;
+  workNature: string;
+  workObjective: string;
+  advisors: Advisor[];
+}
+
+export interface Advisor {
+  id: string;
+  name: string;
+  title: string; // Dr., Dra., Me., Prof., etc.
 }
 
 export type BlockType = 

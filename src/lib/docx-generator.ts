@@ -1,6 +1,6 @@
 import { Document as DocxDocument, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from 'docx';
 import { saveAs } from 'file-saver';
-import { Document, Block } from '@/types/document';
+import { Document, Block, Advisor } from '@/types/document';
 
 export class DocxGenerator {
   private document: Document;
@@ -24,21 +24,7 @@ export class DocxGenerator {
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 400 },
-      }),
-      
-      // Curso
-      new Paragraph({
-        children: [
-          new TextRun({
-            text: info.course.toUpperCase(),
-            font: 'Arial',
-            size: 24,
-            bold: true,
-          }),
-        ],
-        alignment: AlignmentType.CENTER,
-        spacing: { after: 800 },
+        spacing: { after: 1200 }, // Espaço maior após instituição
       }),
       
       // Autor
@@ -52,49 +38,126 @@ export class DocxGenerator {
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 1200 },
+        spacing: { after: 1600 }, // Espaço maior para centralizar na página
       }),
       
-      // Título
+      // Título e Subtítulo
       new Paragraph({
         children: [
           new TextRun({
-            text: info.title.toUpperCase(),
+            text: info.title.toUpperCase() + (info.subtitle ? `: ${info.subtitle.toUpperCase()}` : ''),
             font: 'Arial',
             size: 24,
             bold: true,
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: info.subtitle ? 200 : 1200 },
+        spacing: { after: 1600 }, // Espaço maior para empurrar cidade/ano para baixo
       }),
-      
-      // Subtítulo (se houver)
-      ...(info.subtitle ? [
-        new Paragraph({
-          children: [
-            new TextRun({
-              text: info.subtitle,
-              font: 'Arial',
-              size: 24,
-            }),
-          ],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 1200 },
-        }),
-      ] : []),
       
       // Cidade e Ano
       new Paragraph({
         children: [
           new TextRun({
-            text: `${info.city}\n${info.year}`,
+            text: info.city,
             font: 'Arial',
             size: 24,
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { before: 2000 },
+        spacing: { after: 120 },
+      }),
+      
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: info.year,
+            font: 'Arial',
+            size: 24,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+      }),
+    ];
+  }
+
+  private createTitlePage(): Paragraph[] {
+    const { info } = this.document;
+    
+    // Construir texto dos orientadores
+    const advisorsText = info.advisors.length > 0 
+      ? info.advisors.map(advisor => `${advisor.title} ${advisor.name}`).join(' e ')
+      : '';
+
+    // Construir texto da natureza do trabalho
+    const workNatureText = `${info.workNature} apresentado ao ${info.institution} para ${info.workObjective} sob orientação de ${advisorsText}.`;
+
+    return [
+      // Nome do Autor
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: info.author.toUpperCase(),
+            font: 'Arial',
+            size: 24,
+            bold: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 1200 },
+      }),
+      
+      // Título e Subtítulo
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: info.title.toUpperCase() + (info.subtitle ? `: ${info.subtitle.toUpperCase()}` : ''),
+            font: 'Arial',
+            size: 24,
+            bold: true,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 1200 },
+      }),
+      
+      // Natureza do Trabalho (com recuo especial)
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: workNatureText,
+            font: 'Arial',
+            size: 24,
+          }),
+        ],
+        alignment: AlignmentType.JUSTIFIED,
+        indent: { left: 4536 }, // Aproximadamente 8cm em twips (8cm * 567 twips/cm)
+        spacing: { line: 240, lineRule: 'auto', after: 1200 }, // Espaçamento simples
+      }),
+      
+      // Cidade
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: info.city,
+            font: 'Arial',
+            size: 24,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { before: 1600, after: 120 },
+      }),
+      
+      // Ano
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: info.year,
+            font: 'Arial',
+            size: 24,
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
       }),
     ];
   }
@@ -213,10 +276,21 @@ export class DocxGenerator {
 
   async generateAndDownload(): Promise<void> {
     try {
+      // Validar se há orientadores
+      if (!this.document.info.advisors || this.document.info.advisors.length === 0) {
+        throw new Error('É necessário adicionar pelo menos um orientador.');
+      }
+
       const coverPageParagraphs = this.createCoverPage();
+      const titlePageParagraphs = this.createTitlePage();
       
-      // Quebra de página após a capa
-      const pageBreak = new Paragraph({
+      // Quebras de página
+      const pageBreakAfterCover = new Paragraph({
+        children: [new TextRun({ text: '', break: 1 })],
+        pageBreakBefore: true,
+      });
+
+      const pageBreakAfterTitle = new Paragraph({
         children: [new TextRun({ text: '', break: 1 })],
         pageBreakBefore: true,
       });
@@ -241,7 +315,9 @@ export class DocxGenerator {
             },
             children: [
               ...coverPageParagraphs,
-              pageBreak,
+              pageBreakAfterCover,
+              ...titlePageParagraphs,
+              pageBreakAfterTitle,
               ...contentParagraphs,
             ],
           },

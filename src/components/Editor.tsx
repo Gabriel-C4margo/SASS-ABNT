@@ -14,7 +14,7 @@ export default function Editor() {
 
   // Mostrar modal de informações na primeira vez
   useEffect(() => {
-    const hasInfo = document.info.institution || document.info.author || document.info.title;
+    const hasInfo = document.info.institution || document.info.author || document.info.title || document.info.advisors.length > 0;
     if (!hasInfo) {
       setShowInfoModal(true);
     }
