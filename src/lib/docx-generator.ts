@@ -20,11 +20,12 @@ export class DocxGenerator {
             text: info.institution.toUpperCase(),
             font: 'Arial',
             size: 24,
-            bold: true,
+            bold: false,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 1200 }, // Espaço maior após instituição
+        spacing: { after: 2500 }, // Espaço maior após instituição
       }),
       
       // Autor
@@ -34,11 +35,12 @@ export class DocxGenerator {
             text: info.author.toUpperCase(),
             font: 'Arial',
             size: 24,
-            bold: true,
+            bold: false,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 1600 }, // Espaço maior para centralizar na página
+        spacing: { after: 3500 }, // Espaço maior para centralizar na página
       }),
       
       // Título e Subtítulo
@@ -49,10 +51,11 @@ export class DocxGenerator {
             font: 'Arial',
             size: 24,
             bold: true,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 1600 }, // Espaço maior para empurrar cidade/ano para baixo
+        spacing: { after: 6000 }, // Espaço maior para empurrar cidade/ano para baixo
       }),
       
       // Cidade e Ano
@@ -62,10 +65,12 @@ export class DocxGenerator {
             text: info.city,
             font: 'Arial',
             size: 24,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
         spacing: { after: 120 },
+        
       }),
       
       new Paragraph({
@@ -74,6 +79,7 @@ export class DocxGenerator {
             text: info.year,
             font: 'Arial',
             size: 24,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
@@ -93,6 +99,21 @@ export class DocxGenerator {
     const workNatureText = `${info.workNature} apresentado ao ${info.institution} para ${info.workObjective} sob orientação de ${advisorsText}.`;
 
     return [
+      // Instituição
+      new Paragraph({
+        children: [
+          new TextRun({
+            text: info.institution.toUpperCase(),
+            font: 'Arial',
+            size: 24,
+            bold: false,
+            color: '000000',
+          }),
+        ],
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 2500 }, // Espaço maior após instituição
+      }),
+
       // Nome do Autor
       new Paragraph({
         children: [
@@ -100,11 +121,12 @@ export class DocxGenerator {
             text: info.author.toUpperCase(),
             font: 'Arial',
             size: 24,
-            bold: true,
+            bold: false,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 1200 },
+        spacing: { after: 3500 },
       }),
       
       // Título e Subtítulo
@@ -115,10 +137,11 @@ export class DocxGenerator {
             font: 'Arial',
             size: 24,
             bold: true,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { after: 1200 },
+        spacing: { after: 1800 },
       }),
       
       // Natureza do Trabalho (com recuo especial)
@@ -127,12 +150,13 @@ export class DocxGenerator {
           new TextRun({
             text: workNatureText,
             font: 'Arial',
-            size: 24,
+            size: 20,
+            color: '000000',
           }),
         ],
         alignment: AlignmentType.JUSTIFIED,
         indent: { left: 4536 }, // Aproximadamente 8cm em twips (8cm * 567 twips/cm)
-        spacing: { line: 240, lineRule: 'auto', after: 1200 }, // Espaçamento simples
+        spacing: { line: 240, lineRule: 'auto', after: 1800 }, // Espaçamento simples
       }),
       
       // Cidade
@@ -145,7 +169,7 @@ export class DocxGenerator {
           }),
         ],
         alignment: AlignmentType.CENTER,
-        spacing: { before: 1600, after: 120 },
+        spacing: { before: 600, after: 120 },
       }),
       
       // Ano
@@ -173,6 +197,8 @@ export class DocxGenerator {
                 font: 'Arial',
                 size: 24,
                 bold: true,
+                color: '000000',
+                allCaps: true
               }),
             ],
             heading: HeadingLevel.HEADING_1,
@@ -189,6 +215,7 @@ export class DocxGenerator {
                 font: 'Arial',
                 size: 24,
                 bold: true,
+                color: '000000',
               }),
             ],
             heading: HeadingLevel.HEADING_2,
@@ -204,6 +231,7 @@ export class DocxGenerator {
                 text: block.content,
                 font: 'Arial',
                 size: 24,
+                color: '000000',
               }),
             ],
             alignment: AlignmentType.JUSTIFIED,
@@ -221,6 +249,7 @@ export class DocxGenerator {
                 font: 'Arial',
                 size: 20, // 10pt
                 italics: true,
+                color: '000000',
               }),
             ],
             alignment: AlignmentType.JUSTIFIED,
@@ -261,6 +290,7 @@ export class DocxGenerator {
                 text: ref,
                 font: 'Arial',
                 size: 24,
+                color: '000000',
               }),
             ],
             alignment: AlignmentType.JUSTIFIED,
